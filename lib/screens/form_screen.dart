@@ -44,7 +44,9 @@ class _FormScreenState extends State<FormScreen> {
       _tanggal = t.tanggal;
       _jenis = t.jenis;
       _kategori = t.kategori;
-      _nominalCtrl.text = t.nominal.toStringAsFixed(0);
+      // Format initial value with thousand separators
+      _nominalCtrl.text =
+          _ThousandSeparatorFormatter.format(t.nominal.toStringAsFixed(0));
       _keteranganCtrl.text = t.keterangan;
       _notesCtrl.text = t.notes;
     }
@@ -223,7 +225,7 @@ class _FormScreenState extends State<FormScreen> {
                     controller: _nominalCtrl,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
+                      _ThousandSeparatorFormatter(),
                     ],
                     decoration: const InputDecoration(
                       prefixText: 'Rp ',
@@ -399,6 +401,35 @@ class _JenisSelector extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Thousand separator formatter ────────────────────────────────────────────
+
+class _ThousandSeparatorFormatter extends TextInputFormatter {
+  /// Static helper so initState can pre-format the initial value.
+  static String format(String digits) {
+    final clean = digits.replaceAll(RegExp(r'[^\d]'), '');
+    if (clean.isEmpty) return '';
+    final buf = StringBuffer();
+    for (int i = 0; i < clean.length; i++) {
+      if (i > 0 && (clean.length - i) % 3 == 0) buf.write('.');
+      buf.write(clean[i]);
+    }
+    return buf.toString();
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    final formatted = format(digits);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

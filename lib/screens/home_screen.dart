@@ -535,9 +535,9 @@ class _TransactionItem extends StatelessWidget {
     final color = isIncome ? AppTheme.incomeColor : AppTheme.expenseColor;
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     final dateFmt = DateFormat('dd MMM', 'id');
-    final keterangan = transaction.keterangan.length > 20
-        ? '${transaction.keterangan.substring(0, 20)}...'
-        : transaction.keterangan;
+    final kategoriDisplay = transaction.kategori.length > 22
+        ? '${transaction.kategori.substring(0, 22)}...'
+        : transaction.kategori;
 
     return Material(
       color: Colors.white,
@@ -572,7 +572,7 @@ class _TransactionItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      keterangan.isEmpty ? transaction.kategori : keterangan,
+                      kategoriDisplay,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
