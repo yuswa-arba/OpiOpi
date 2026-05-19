@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../services/sheets_service.dart';
 import '../services/storage_service.dart';
-import 'home_screen.dart';
+import 'book_selection_screen.dart';
 
 class UserSelectionScreen extends StatefulWidget {
   const UserSelectionScreen({super.key});
@@ -46,7 +46,9 @@ class _UserSelectionScreenState extends State<UserSelectionScreen> {
     await StorageService.setActiveUser(name);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => HomeScreen(activeUser: name)),
+      MaterialPageRoute(
+        builder: (_) => BookSelectionScreen(activeUser: name, onboarding: true),
+      ),
     );
   }
 

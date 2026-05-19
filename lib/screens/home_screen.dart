@@ -5,6 +5,7 @@ import '../app_theme.dart';
 import '../models/transaction.dart';
 import '../services/sheets_service.dart';
 import '../services/storage_service.dart';
+import 'book_selection_screen.dart';
 import 'detail_screen.dart';
 import 'form_screen.dart';
 import 'settings_screen.dart';
@@ -12,8 +13,13 @@ import 'user_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String activeUser;
+  final String activeBookName;
 
-  const HomeScreen({super.key, required this.activeUser});
+  const HomeScreen({
+    super.key,
+    required this.activeUser,
+    required this.activeBookName,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -25,10 +31,12 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
 
   late DateTime _selectedMonth;
+  late String _activeBookName;
 
   @override
   void initState() {
     super.initState();
+    _activeBookName = widget.activeBookName;
     final now = DateTime.now();
     _selectedMonth = DateTime(now.year, now.month);
     _loadTransactions();
@@ -104,6 +112,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _gantiBuku() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const BookSelectionScreen(onboarding: false),
+      ),
+    );
+    if (!mounted) return;
+    final name = await StorageService.getActiveBookName();
+    if (name != null && name.isNotEmpty && mounted) {
+      setState(() => _activeBookName = name);
+      _loadTransactions();
+    }
+  }
+
   Future<void> _gantiUser() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -125,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (confirmed == true && mounted) {
       await StorageService.clearActiveUser();
+      await StorageService.clearActiveBook();
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const UserSelectionScreen()),
@@ -174,12 +197,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: 'Ganti Buku',
+            icon: const Icon(Icons.book_rounded),
+            onPressed: _gantiBuku,
+          ),
+          IconButton(
             tooltip: 'Pengaturan',
             icon: const Icon(Icons.settings_rounded),
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
+              if (!mounted) return;
+              final name = await StorageService.getActiveBookName();
+              if (name != null && name.isNotEmpty && mounted) {
+                setState(() => _activeBookName = name);
+              }
               _loadTransactions();
             },
           ),
@@ -264,20 +297,27 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Pengguna aktif',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white70,
-                  ),
-                ),
                 Text(
                   widget.activeUser,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    const Icon(Icons.book_rounded, size: 12, color: Colors.white70),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        _activeBookName,
+                        style: const TextStyle(fontSize: 12, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
